@@ -8,6 +8,7 @@ from DNN_highcharts_functions_v001 import make_highcharts, visualize_urd_highcha
 import pandas as pd
 import h2o
 from h2o import exceptions
+from h2o.automl import H2OAutoML
 from h2o.estimators.deeplearning import H2ODeepLearningEstimator
 from h2o.estimators import H2ODeepWaterEstimator
 import platform
@@ -94,9 +95,32 @@ perf=model.model_performance(test_data=test)
 pred = model.predict(test_data=test)
 
 
+
 predict=pd_test.copy()
 predict['predict']=pred.as_data_frame()['predict']
 ##################################################3
+
+##############################################
+#### Automl
+
+
+# Run AutoML for 30 seconds
+aml = H2OAutoML(max_runtime_secs = 1800)
+aml.train(x=predictors, y=response, training_frame= train, validation_frame=validation, leaderboard_frame = test)
+
+# View the AutoML Leaderboard
+lb = aml.leaderboard
+lb
+pred_aml=aml.predict(test)
+#### testing ################################################################
+
+predict=pd_test.copy()
+predict['predict_dnn']=pred.as_data_frame()['predict']
+predict['predict_aml']=pred_aml.as_data_frame()['predict']
+
+
+
+
 # plotting plotly
 
 

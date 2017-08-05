@@ -4,7 +4,7 @@ import platform
 
 # from DNN_plotly_functions_v001 import visualize_urd
 # from DNN_h2o_functions_v001 import create_h2o_urd_model, get_predictions
-from DNN_highcharts_functions_v001 import make_highcharts, visualize_urd_highcharts
+# from DNN_highcharts_functions_v001 import make_highcharts, visualize_urd_highcharts
 import pandas as pd
 import h2o
 from h2o import exceptions
@@ -39,6 +39,8 @@ urd_path = os.path.join(home_path, '0MyDataBases/40Python/J_inertia/inertia.csv'
 data_full = pd.read_csv(urd_path)
 data_full['Time']=pd.to_datetime(data_full['Time'])
 
+# data_full.to_csv(urd_path, index=False)
+
 # Define list of pandas DataFrames for model to predict on
 base_data_path = os.path.join(home_path, '0MyDataBases/40Python/J_inertia')
 l_csv_test_data = []  # 'ExportFileWeather_2015.csv', 'ExportFileWeather_2014.csv', 'ExportFileWeather_2013.csv',
@@ -47,8 +49,8 @@ l_csv_test_data = []  # 'ExportFileWeather_2015.csv', 'ExportFileWeather_2014.cs
 
 
 # Set start and end dates for training
-date_start = '1/1/2013 0:00'
-date_end = '1/1/2015 0:00'
+date_start = '2013-01-01 00:00:00'
+date_end = '2016-01-01 00:00:00'
 
 # Find row indices of training data
 start_row = data_full[data_full['Time'] == date_start].index.tolist()[0]
@@ -58,54 +60,52 @@ end_row = data_full[data_full['Time'] == date_end].index.tolist()[0]
 
 ############################################################################333
 ## Starting h2o part
-h2o.init(ip='localhost', strict_version_check=False)
+h2o.init()
 
 
 pd_train = data_full[start_row:end_row].copy()
-pd_train['Time']=pd.to_datetime(pd_train['Time'])
 
 pd_test = data_full[end_row:].copy()
-pd_test['Time']=pd.to_datetime(pd_test['Time'])
 
 
 train = h2o.H2OFrame(pd_train,
-                     column_types=['time', 'real', 'real', 'real', 'enum'],
+                     column_types=['time', 'real', 'real', 'real'],
                      destination_frame='Training_Validation_Frame')
 training, validation = train.split_frame(ratios=[0.8])
 
 test=h2o.H2OFrame(pd_test,
-                     column_types=['time', 'real', 'real', 'real', 'enum'],
+                     column_types=['time', 'real', 'real', 'real'],
                      destination_frame='Test_Frame')
 # Define predictors and response
-predictors = ['Time','Wind','Load','if_special']
+predictors = ['Time','Wind','Load']#  ,'if_special']
 response = 'Inertia'
 
-# Run DNN
-model = H2ODeepLearningEstimator(model_id='inertia_first_try', epochs=5000, hidden=[100,100,100], activation="Rectifier",
-                                     l1=0, l2=0,  stopping_metric='MSE')
-
-model.train(x=predictors, y=response, training_frame=training, validation_frame=validation)
+# # Run DNN
+# model = H2ODeepLearningEstimator(model_id='inertia_first_try', epochs=5000, hidden=[100,100,100], activation="Rectifier",
+#                                      l1=0, l2=0,  stopping_metric='MSE')
+#
+# model.train(x=predictors, y=response, training_frame=training, validation_frame=validation)
 
 # Save DNN model to /tmp folder
 # h2o.save_model(urd_model, path=save_path, force=True)
 
-perf=model.model_performance(test_data=test)
+# perf=model.model_performance(test_data=test)
+#
+# # Get model predictions on test data, put directly in pandas DataFrames inside dictionary
+# pred = model.predict(test_data=test)
+#
 
-# Get model predictions on test data, put directly in pandas DataFrames inside dictionary
-pred = model.predict(test_data=test)
-
-
-
-predict=pd_test.copy()
-predict['predict']=pred.as_data_frame()['predict']
-##################################################3
+#
+# predict=pd_test.copy()
+# predict['predict']=pred.as_data_frame()['predict']
+# ##################################################3
 
 ##############################################
 #### Automl
 
 
 # Run AutoML for 30 seconds
-aml = H2OAutoML(max_runtime_secs = 1800)
+aml = H2OAutoML(max_runtime_secs = 18000)
 aml.train(x=predictors, y=response, training_frame= train, validation_frame=validation, leaderboard_frame = test)
 
 # View the AutoML Leaderboard
@@ -115,8 +115,9 @@ pred_aml=aml.predict(test)
 #### testing ################################################################
 
 predict=pd_test.copy()
-predict['predict_dnn']=pred.as_data_frame()['predict']
-predict['predict_aml']=pred_aml.as_data_frame()['predict']
+
+# predict['predict_dnn']=pred.as_data_frame()['predict']
+predict['predict_aml']=pred_aml.as_data_frame()['predict'].values
 
 
 
@@ -130,13 +131,13 @@ import plotly
 # Create random data with numpy
 import numpy as np
 
-N = 500
-random_x = np.linspace(0, 1, N)
-random_y = np.random.randn(N)
+# N = 500
+# random_x = np.linspace(0, 1, N)
+# random_y = np.random.randn(N)
 
 trace = go.Scatter(
     x = predict['Time'],
-    y = predict['predict']
+    y = predict['predict_aml']
 )
 
 
@@ -145,7 +146,15 @@ trace2 = go.Scatter(
     y = predict['Inertia']
 )
 
-data = [trace2]
+trace3 = go.Scatter(
+    x = predict['Time'],
+    y = predict['Inertia']- predict['predict_aml']
+)
+
+
+
+
+data = [trace,trace2,trace3]
 
 # Create layout for plotly
 layout = dict(

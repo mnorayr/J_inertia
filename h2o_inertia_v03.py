@@ -60,7 +60,7 @@ h2o.init(nthreads=11)
 data_full_h2o = h2o.H2OFrame(data_full,
                      column_types=['time', 'real', 'real', 'real'],
                      destination_frame='Full_Frame')
-training, validation, test = train.split_frame(ratios=[0.6,0.2])
+training, validation, test = data_full_h2o.split_frame(ratios=[0.6,0.2])
 
 # Define predictors and response
 predictors = ['Time','Wind','Load']#  ,'if_special']
@@ -231,7 +231,7 @@ layout = dict(
 
 # Plot with plotly
 fig = go.Figure(data=data, layout=layout)
-plotly.offline.plot(fig, filename='bla')
+plotly.offline.plot(fig, filename='bla3')
 
 # py.iplot(data, filename='basic-line')
 

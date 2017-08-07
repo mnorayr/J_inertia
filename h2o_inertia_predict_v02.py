@@ -45,6 +45,16 @@ data_full['Time']=pd.to_datetime(data_full['Time'])
 
 # data_full.to_csv(urd_path, index=False)
 
+###########################################
+## load data to predict
+future_data_path = os.path.join(home_path, '0MyDataBases/40Python/J_inertia/future_data.csv')
+future_data = pd.read_csv(future_data_path)
+future_data['Time']=pd.to_datetime(future_data['Time'])
+
+
+
+
+
 # Define list of pandas DataFrames for model to predict on
 base_data_path = os.path.join(home_path, '0MyDataBases/40Python/J_inertia')
 l_csv_test_data = []  # 'ExportFileWeather_2015.csv', 'ExportFileWeather_2014.csv', 'ExportFileWeather_2013.csv',
@@ -72,6 +82,7 @@ pd_train = data_full[start_row:end_row].copy()
 pd_test = data_full[end_row:].copy()
 
 
+
 train = h2o.H2OFrame(pd_train,
                      column_types=['time', 'real', 'real', 'real'],
                      destination_frame='Training_Validation_Frame')
@@ -80,6 +91,11 @@ training, validation = train.split_frame(ratios=[0.8])
 test=h2o.H2OFrame(pd_test,
                      column_types=['time', 'real', 'real', 'real'],
                      destination_frame='Test_Frame')
+
+future=h2o.H2OFrame(future_data,
+                     column_types=['time', 'real', 'real'],
+                     destination_frame='future')
+
 # Define predictors and response
 predictors = ['Time','Wind','Load']#  ,'if_special']
 response = 'Inertia'
@@ -105,11 +121,11 @@ perf_aml=load_aml.model_performance(test_data=test)
 perf_aml
 
 
-pred_aml=load_aml.predict(test)
+pred_aml=load_aml.predict(future)
 
 #### testing ################################################################
 
-predict=pd_test.copy()
+predict=future_data.copy()
 
 # predict['predict_dnn']=pred.as_data_frame()['predict']
 predict['predict_aml']=pred_aml.as_data_frame()['predict'].values
@@ -168,7 +184,7 @@ model.train(x=predictors, y=response, training_frame=training, validation_frame=
 perf=model.model_performance(test_data=test)
 perf
 # Get model predictions on test data, put directly in pandas DataFrames inside dictionary
-pred_dnn = model.predict(test_data=test)
+pred_dnn = model.predict(test_data=future)
 
 
 
@@ -187,7 +203,7 @@ perf_load=load_dnn.model_performance(test_data=test)
 perf_load
 
 # Get model predictions on test data, put directly in pandas DataFrames inside dictionary
-pred_dnn_load = load_dnn.predict(test_data=test)
+pred_dnn_load = load_dnn.predict(test_data=future)
 
 
 predict['predict_dnn_load']=pred_dnn_load.as_data_frame()['predict'].values
@@ -200,11 +216,11 @@ predict['predict_dnn_load']=pred_dnn_load.as_data_frame()['predict'].values
 # N = 500
 # random_x = np.linspace(0, 1, N)
 # random_y = np.random.randn(N)
-inertia = go.Scatter(
-    x = predict['Time'],
-    y = predict['Inertia'],
-    name='original inertia'
-)
+# inertia = go.Scatter(
+#     x = predict['Time'],
+#     y = predict['Inertia'],
+#     name='original inertia'
+# )
 
 prediction_aml = go.Scatter(
     x = predict['Time'],
@@ -223,25 +239,25 @@ prediction_dnn_load = go.Scatter(
     y = predict['predict_dnn_load'],
     name='prediction_dnn_load'
 )
+#
+# error_aml = go.Scatter(
+#     x = predict['Time'],
+#     y = predict['Inertia']- predict['predict_aml'],
+#     name='error_aml'
+# )
+# error_dnn = go.Scatter(
+#     x = predict['Time'],
+#     y = predict['Inertia']- predict['predict_dnn'],
+#     name='error_dnn'
+# )
+# error_dnn_load = go.Scatter(
+#     x = predict['Time'],
+#     y = predict['Inertia']- predict['predict_dnn_load'],
+#     name='error_dnn_load'
+# )
 
-error_aml = go.Scatter(
-    x = predict['Time'],
-    y = predict['Inertia']- predict['predict_aml'],
-    name='error_aml'
-)
-error_dnn = go.Scatter(
-    x = predict['Time'],
-    y = predict['Inertia']- predict['predict_dnn'],
-    name='error_dnn'
-)
-error_dnn_load = go.Scatter(
-    x = predict['Time'],
-    y = predict['Inertia']- predict['predict_dnn_load'],
-    name='error_dnn_load'
-)
 
-
-data = [inertia,prediction_aml,prediction_dnn,prediction_dnn_load, error_aml,error_dnn,error_dnn_load]
+data = [prediction_aml,prediction_dnn,prediction_dnn_load]
 
 # Create layout for plotly
 layout = dict(

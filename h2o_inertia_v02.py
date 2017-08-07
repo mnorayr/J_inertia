@@ -116,11 +116,28 @@ predict['predict_aml']=pred_aml.as_data_frame()['predict'].values
 
 
 
+
+
+
+#################################################################
+##### working with the loaded model
+load_dnn=h2o.load_model('models/dnn_inertmed/inertia_first_try_22767')
+perf_load=load_dnn.model_performance(test_data=test)
+perf_load
+
+# Get model predictions on test data, put directly in pandas DataFrames inside dictionary
+pred_dnn_load = load_dnn.predict(test_data=test)
+
+
+predict['predict_dnn_load']=pred_dnn_load.as_data_frame()['predict'].values
+
+#####################################################################
+
 no_rows=len(training)
 #####################################################################
 # Run DNN
 model = H2ODeepLearningEstimator(model_id='inertia_second_try'
-                                 ,checkpoint= model #'inertia_first_try' #load_dnn
+                                 ,checkpoint= load_dnn #model #'inertia_first_try' #load_dnn
                                  ,standardize=True
                                  ,epochs=1000
                                  ,hidden=[150,150,150]

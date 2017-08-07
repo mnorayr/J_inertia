@@ -23,7 +23,7 @@ import numpy as np
 ##### Start h2o#######
 #h2o.init(nthreads=71, max_mem_size='30G')
 #h2o.init(ip="192.168.0.11",strict_version_check=False)
-
+####################333
 # Remove all objects from h2o
 #h2o.remove_all()
 

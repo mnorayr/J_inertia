@@ -73,12 +73,12 @@ pd_test = data_full[end_row:].copy()
 
 
 train = h2o.H2OFrame(pd_train,
-                     column_types=['time', 'real', 'real', 'real'],
+                     column_types=['time', 'real', 'real', 'real','real'],
                      destination_frame='Training_Validation_Frame')
 training, validation = train.split_frame(ratios=[0.8])
 
 test=h2o.H2OFrame(pd_test,
-                     column_types=['time', 'real', 'real', 'real'],
+                     column_types=['time', 'real', 'real', 'real','real'],
                      destination_frame='Test_Frame')
 # Define predictors and response
 predictors = ['Time','Wind','Load']#  ,'if_special']
@@ -128,7 +128,6 @@ perf_load
 # Get model predictions on test data, put directly in pandas DataFrames inside dictionary
 pred_dnn_load = load_dnn.predict(test_data=test)
 
-
 predict['predict_dnn_load']=pred_dnn_load.as_data_frame()['predict'].values
 
 #####################################################################
@@ -147,7 +146,7 @@ model = H2ODeepLearningEstimator(model_id='inertia_second_try'
                                  ,stopping_metric='RMSE'
                                  ,regression_stop=9000
                                  , stopping_rounds = 10
-                                 ,stopping_tolerance=10e-1
+                                 # ,stopping_tolerance=1e-1
                                  , l1 =0 # 1e-6
                                  , l2 =0 # 1e-6
                                  , ignore_const_cols = False

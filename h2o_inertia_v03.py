@@ -58,7 +58,7 @@ h2o.init(nthreads=11)
 
 
 data_full_h2o = h2o.H2OFrame(data_full,
-                     column_types=['time', 'real', 'real', 'real'],
+                     column_types=['time', 'real', 'real', 'real','real'],
                      destination_frame='Full_Frame')
 training, validation, test = data_full_h2o.split_frame(ratios=[0.6,0.2])
 
@@ -126,7 +126,7 @@ model = H2ODeepLearningEstimator(model_id='inertia_second_try'
                                  , train_samples_per_iteration = int(10 * (no_rows) / 2)
                                  ####################################################################
                                  ### more control
-                                 , input_dropout_ratio=1e-5
+                                 , input_dropout_ratio=1e-5e
                                  ################################# Controlling the Momentum
                                  , adaptive_rate=False
                                  # ,rho=0.9

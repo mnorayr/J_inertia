@@ -84,16 +84,16 @@ pd_test = data_full[end_row:].copy()
 
 
 train = h2o.H2OFrame(pd_train,
-                     column_types=['time', 'real', 'real', 'real'],
+                     column_types=['time', 'real', 'real', 'real','real'],
                      destination_frame='Training_Validation_Frame')
 training, validation = train.split_frame(ratios=[0.8])
 
 test=h2o.H2OFrame(pd_test,
-                     column_types=['time', 'real', 'real', 'real'],
+                     column_types=['time', 'real', 'real', 'real','real'],
                      destination_frame='Test_Frame')
 
 future=h2o.H2OFrame(future_data,
-                     column_types=['time', 'real', 'real'],
+                     column_types=['time', 'real', 'real','real'],
                      destination_frame='future')
 
 # Define predictors and response

@@ -64,7 +64,8 @@ end_row = data_full[data_full['Time'] == date_end].index.tolist()[0]
 
 ############################################################################333
 ## Starting h2o part
-h2o.init(nthreads=11)
+# h2o.init(nthreads=11)
+h2o.init()
 
 
 pd_train = data_full[start_row:end_row].copy()
@@ -100,20 +101,20 @@ response = 'Inertia'
 # h2o.save_model(aml.leader,'models/aml_leader')
 
 ### loading the stored model
-load_aml=h2o.load_model('models/aml_leader/GBM_grid_0_AutoML_20170805_122138_model_2')
-perf_aml=load_aml.model_performance(test_data=test)
-perf_aml
-
-
-pred_aml=load_aml.predict(test)
+# load_aml=h2o.load_model('models/aml_leader/GBM_grid_0_AutoML_20170805_122138_model_2')
+# perf_aml=load_aml.model_performance(test_data=test)
+# perf_aml
+#
+#
+# pred_aml=load_aml.predict(test)
 
 #### testing ################################################################
 
 predict=pd_test.copy()
-
-# predict['predict_dnn']=pred.as_data_frame()['predict']
-predict['predict_aml']=pred_aml.as_data_frame()['predict'].values
-
+#
+# # predict['predict_dnn']=pred.as_data_frame()['predict']
+# predict['predict_aml']=pred_aml.as_data_frame()['predict'].values
+#
 
 
 
@@ -121,14 +122,14 @@ predict['predict_aml']=pred_aml.as_data_frame()['predict'].values
 
 #################################################################
 ##### working with the loaded model
-load_dnn=h2o.load_model('models/dnn_inertmed/inertia_first_try_22767')
-perf_load=load_dnn.model_performance(test_data=test)
-perf_load
-
-# Get model predictions on test data, put directly in pandas DataFrames inside dictionary
-pred_dnn_load = load_dnn.predict(test_data=test)
-
-predict['predict_dnn_load']=pred_dnn_load.as_data_frame()['predict'].values
+# load_dnn=h2o.load_model('models/dnn_inertmed/inertia_first_try_22767')
+# perf_load=load_dnn.model_performance(test_data=test)
+# perf_load
+#
+# # Get model predictions on test data, put directly in pandas DataFrames inside dictionary
+# pred_dnn_load = load_dnn.predict(test_data=test)
+#
+# predict['predict_dnn_load']=pred_dnn_load.as_data_frame()['predict'].values
 
 #####################################################################
 
@@ -136,7 +137,7 @@ no_rows=len(training)
 #####################################################################
 # Run DNN
 model = H2ODeepLearningEstimator(model_id='inertia_second_try'
-                                 ,checkpoint= load_dnn #model #'inertia_first_try' #load_dnn
+                                 # ,checkpoint= load_dnn #model #'inertia_first_try' #load_dnn
                                  ,standardize=True
                                  ,epochs=1000
                                  ,hidden=[150,150,150]
@@ -145,7 +146,7 @@ model = H2ODeepLearningEstimator(model_id='inertia_second_try'
                                  , max_w2=10.0
                                  ,stopping_metric='RMSE'
                                  ,regression_stop=9000
-                                 , stopping_rounds = 10
+                                 , stopping_rounds = 0
                                  # ,stopping_tolerance=1e-1
                                  , l1 =0 # 1e-6
                                  , l2 =0 # 1e-6
@@ -157,7 +158,7 @@ model = H2ODeepLearningEstimator(model_id='inertia_second_try'
                                  , score_duty_cycle = 1
                                  , shuffle_training_data = False  # Recommended True, but False gives better deviance
                                  , replicate_training_data = True
-                                 , train_samples_per_iteration = int(100 * (no_rows))
+                                 , train_samples_per_iteration = int(100* (no_rows))
                                  ####################################################################
                                  ### more control
                                  , input_dropout_ratio=1e-5
@@ -165,8 +166,8 @@ model = H2ODeepLearningEstimator(model_id='inertia_second_try'
                                  , adaptive_rate=False
                                  # ,rho=0.999
                                  # ,epsilon=1e-10
-                                 , rate=1e-6  # 0.000004 # Default is 0.005; 0.00005 is too smooth enough ?
-                                 , rate_annealing=1e-6 # Default is 1e-6
+                                 , rate=0.005  # 0.000004 # Default is 0.005; 0.00005 is too smooth enough ?
+                                 , rate_annealing=1e-60 # Default is 1e-6
                                  # ################
                                  # # ,rate_decay=
                                  # # , momentum_start=0

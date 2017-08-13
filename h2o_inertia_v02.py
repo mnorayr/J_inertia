@@ -136,17 +136,17 @@ no_rows=len(training)
 #####################################################################
 # Run DNN
 model = H2ODeepLearningEstimator(model_id='inertia_second_try'
-                                 ,checkpoint= load_dnn #model #'inertia_first_try' #load_dnn
+                                 ,checkpoint= model #'inertia_first_try' #load_dnn
                                  ,standardize=True
-                                 ,epochs=1000
+                                 ,epochs=50000
                                  ,hidden=[150,150,150]
                                  ,activation= "tanh" #""rectifier" # "maxoutwithdropout" #"rectifierwithdropout" #
                                  # , hidden_dropout_ratios=[0.15, 0.15, 0.15]
                                  , max_w2=10.0
                                  ,stopping_metric='RMSE'
                                  ,regression_stop=9000
-                                 , stopping_rounds = 10
-                                 # ,stopping_tolerance=1e-1
+                                 , stopping_rounds = 0
+                                 # ,stopping_tolerance=10e-20
                                  , l1 =0 # 1e-6
                                  , l2 =0 # 1e-6
                                  , ignore_const_cols = False
@@ -157,23 +157,23 @@ model = H2ODeepLearningEstimator(model_id='inertia_second_try'
                                  , score_duty_cycle = 1
                                  , shuffle_training_data = False  # Recommended True, but False gives better deviance
                                  , replicate_training_data = True
-                                 , train_samples_per_iteration = int(100 * (no_rows))
+                                 , train_samples_per_iteration = int(10 * (no_rows) / 2)
                                  ####################################################################
                                  ### more control
                                  , input_dropout_ratio=1e-5
                                  ################################# Controlling the Momentum
                                  , adaptive_rate=False
-                                 # ,rho=0.999
-                                 # ,epsilon=1e-10
+                                 # ,rho=0.9
+                                 # ,epsilon=1e-4
                                  , rate=1e-6  # 0.000004 # Default is 0.005; 0.00005 is too smooth enough ?
-                                 , rate_annealing=1e-6 # Default is 1e-6
-                                 # ################
-                                 # # ,rate_decay=
-                                 # # , momentum_start=0
-                                 # # , momentum_ramp=1e10
-                                 # # , momentum_stable=1e10
-                                 # # , nesterov_accelerated_gradient=False
-                                 # , initial_weight_distribution="UniformAdaptive"
+                                 , rate_annealing=1e-60 # Default is 1e-6
+                                 ################
+                                 # ,rate_decay=
+                                 # , momentum_start=0
+                                 # , momentum_ramp=1e10
+                                 # , momentum_stable=1e10
+                                 # , nesterov_accelerated_gradient=False
+                                 , initial_weight_distribution="UniformAdaptive"
                                  # "normal", "Uniform", "UniformAdaptive"
                                  ,overwrite_with_best_model=True
                                 )

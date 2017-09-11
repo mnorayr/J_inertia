@@ -82,7 +82,7 @@ test=h2o.H2OFrame(pd_test,
                      column_types=['time', 'real', 'real', 'real','real'],
                      destination_frame='Test_Frame')
 # Define predictors and response
-predictors = ['Time','Wind','Load']#  ,'if_special']
+predictors = ['Time','Wind','Load', 'Gas Price']#  ,'if_special']
 response = 'Inertia'
 
 
@@ -91,20 +91,26 @@ response = 'Inertia'
 #### Automl
 
 
-# # Run AutoML for 30 seconds
-# aml = H2OAutoML(max_runtime_secs = 18000)
-# aml.train(x=predictors, y=response, training_frame= train, validation_frame=validation, leaderboard_frame = test)
-#
-# # View the AutoML Leaderboard
-# lb = aml.leaderboard
-# lb
-# h2o.save_model(aml.leader,'models/aml_leader')
+# Run AutoML for 30 seconds
+aml = H2OAutoML(max_runtime_secs = 1800)
+aml.train(x=predictors, y=response, training_frame= train, validation_frame=validation, leaderboard_frame = test)
+
+# View the AutoML Leaderboard
+lb = aml.leaderboard
+lb
+saved_model =h2o.save_model(aml.leader,'models/aml_leader')
+ # 'C:\\0MyDataBases\\40Python\\J_inertia\\models\\aml_leader\\GBM_grid_0_AutoML_20170910_162254_model_3'
+#u'C:\\0MyDataBases\\40Python\\J_inertia\\models\\aml_leader\\GBM_grid_0_AutoML_20170911_081932_model_0' rmse 22525
+
+load_aml2=h2o.load_model('C:\\0MyDataBases\\40Python\\J_inertia\\models\\aml_leader\\GBM_grid_0_AutoML_20170911_081932_model_0')
+perf_aml2=load_aml2.model_performance(test_data=test)
+perf_aml2
 
 ### loading the stored model
-# load_aml=h2o.load_model('models/aml_leader/GBM_grid_0_AutoML_20170805_122138_model_2')
-# perf_aml=load_aml.model_performance(test_data=test)
-# perf_aml
-#
+load_aml=h2o.load_model('C:\\0MyDataBases\\40Python\\J_inertia\\models\\gbm_automl')
+perf_aml=load_aml.model_performance(test_data=test)
+perf_aml
+
 #
 # pred_aml=load_aml.predict(test)
 
@@ -223,11 +229,11 @@ inertia = go.Scatter(
     name='original inertia'
 )
 
-prediction_aml = go.Scatter(
-    x = predict['Time'],
-    y = predict['predict_aml'],
-    name='prediction_aml'
-)
+# prediction_aml = go.Scatter(
+#     x = predict['Time'],
+#     y = predict['predict_aml'],
+#     name='prediction_aml'
+# )
 
 prediction_dnn = go.Scatter(
     x = predict['Time'],
